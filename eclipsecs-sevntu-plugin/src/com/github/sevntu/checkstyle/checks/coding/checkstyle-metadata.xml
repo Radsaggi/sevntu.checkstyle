@@ -302,6 +302,11 @@
             <message-key key="incorrect.getter.name" />
             <message-key key="incorrect.setter.name" />
         </rule-metadata>
+	   
+	   <rule-metadata name="%ValueOfInsteadOfNewInstanceCheck.name" internal-name="ValueOfInsteadOfNewInstanceCheck" parent="TreeWalker">
+		   <alternative-name internal-name="com.github.sevntu.checkstyle.checks.coding.ValueOfInsteadOfNewInstanceCheck"/>
+		   <description>%ValueOfInsteadOfNewInstanceCheck.desc</description>
+	   </rule-metadata>
                
     </rule-group-metadata>
 </checkstyle-metadata>

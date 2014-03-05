@@ -22,6 +22,7 @@ import com.puppycrawl.tools.checkstyle.DefaultLogger;
 import com.puppycrawl.tools.checkstyle.TreeWalker;
 import com.puppycrawl.tools.checkstyle.api.AuditEvent;
 import com.puppycrawl.tools.checkstyle.api.Configuration;
+import org.junit.ComparisonFailure;
 
 public abstract class BaseCheckTestSupport extends Assert
 {
@@ -84,13 +85,34 @@ public abstract class BaseCheckTestSupport extends Assert
 		BufferedReader br = new BufferedReader(new InputStreamReader(bais));
 
 		try {
+			StringBuilder expectAgg = new StringBuilder();
+			StringBuilder actualAgg = new StringBuilder();
+                        StringBuilder comparAgg = new StringBuilder();
+			
 			for (int i = 0; i < aExpected.length; i++) {
-				final String expected = aMessageFileName + ":" + aExpected[i];
+				final String expectd = aMessageFileName + ":" + aExpected[i];
 				final String actual = br.readLine();
-				assertEquals("error message " + i, expected, actual);
+				try {
+					assertEquals("error message " + (i + 1), expectd, actual);
+				} catch (ComparisonFailure e) {
+					expectAgg.append("\n").append(expectd);
+					actualAgg.append("\n").append(actual);
+                                        comparAgg.append("\n").append(e.getMessage());
+				}
 			}
-
-			assertEquals("Check generated unexpected warning: " + br.readLine(), aExpected.length, foundErrorsCount);
+			
+			try {
+                            assertEquals(expectAgg.toString(), actualAgg.toString());
+                        } catch (ComparisonFailure e) {
+                            throw new ExtendedComparisonFailure(e, comparAgg.toString());
+                        }
+			
+			int unexpectedErrorsCount = foundErrorsCount - aExpected.length;
+			String message = String.format("Check generated %s unexpected error message%s: \n%s",
+				unexpectedErrorsCount, unexpectedErrorsCount == 1 ? "" : "s, the first from which was",
+				br.readLine());
+			message += "\n Number of messages"; // prints as " Number of messages expected [*] but was [*]"
+			assertEquals(message, foundErrorsCount, aExpected.length);
 			checker.destroy();
 		} finally {
 			br.close();
